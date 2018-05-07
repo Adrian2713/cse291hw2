@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Date;
 
 public class GlobeSortClient {
 
@@ -38,14 +39,50 @@ public class GlobeSortClient {
         this.serverStr = ip + ":" + port;
     }
 
-    public void run(Integer[] values) throws Exception {
+    public void run(Integer[] values, Integer numValues) throws Exception {
+    		Date startLatencyDate = new Date();
+    		long startLatency = startLatencyDate.getTime();
+    		
+    		
         System.out.println("Pinging " + serverStr + "...");
         serverStub.ping(Empty.newBuilder().build());
         System.out.println("Ping successful.");
 
+        //latency
+        Date endLatencyTimeDate = new Date();
+        long latency = endLatencyTimeDate.getTime() - startLatency;
+        System.out.print("latency is : ");
+        System.out.println(latency);
+        
+        
         System.out.println("Requesting server to sort array");
+        Date startAppThroughputDate = new Date();
+        long startAppThroughputTime = startAppThroughputDate.getTime();
         IntArray request = IntArray.newBuilder().addAllValues(Arrays.asList(values)).build();
         IntArray response = serverStub.sortIntegers(request);
+        
+        
+        Date endAppThroughputDate = new Date();
+        Integer appThroughputTime = (int) (endAppThroughputDate.getTime() - startAppThroughputTime);
+        Integer appThroughput = numValues / appThroughputTime * 1000;
+        Integer[] responseNo = response.getValuesList().toArray(new Integer[response.getValuesList().size()]);
+        
+        //period
+        System.out.print("duration of sorting = ");
+        Integer period = responseNo[responseNo.length - 1];
+        System.out.println(period);
+        
+        //app throughput
+        
+        System.out.print("app throughput is : ");
+        System.out.println(appThroughput);
+        
+        //network throughput
+        Integer netThroughput = numValues / ((appThroughputTime - period) / 2) * 1000;
+        System.out.print("network throughput is : ");
+        System.out.println(netThroughput);
+        
+        
         System.out.println("Sorted array");
     }
 
@@ -88,13 +125,16 @@ public class GlobeSortClient {
             throw new RuntimeException("Argument parsing failed");
         }
 
-        Integer[] values = genValues(cmd_args.getInt("num_values"));
+        Integer numValues= cmd_args.getInt("num_values");
+        Integer[] values = genValues(numValues);
+        
 
         GlobeSortClient client = new GlobeSortClient(cmd_args.getString("server_ip"), cmd_args.getInt("server_port"));
         try {
-            client.run(values);
+            client.run(values, numValues);
         } finally {
             client.shutdown();
         }
     }
+    
 }
