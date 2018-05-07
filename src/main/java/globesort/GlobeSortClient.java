@@ -64,7 +64,7 @@ public class GlobeSortClient {
         
         Date endAppThroughputDate = new Date();
         Integer appThroughputTime = (int) (endAppThroughputDate.getTime() - startAppThroughputTime);
-        Integer appThroughput = numValues * 1000 / appThroughputTime ;
+        long appThroughput = numValues * 1000 / appThroughputTime ;
         Integer[] responseNo = response.getValuesList().toArray(new Integer[response.getValuesList().size()]);
         
         //period
@@ -78,7 +78,7 @@ public class GlobeSortClient {
         System.out.println(appThroughput);
         
         //network throughput
-        Integer netThroughput = numValues * 1000 / ((appThroughputTime - period) / 2) ;
+        long netThroughput = numValues * 1000 / ((appThroughputTime - period) / 2) ;
         System.out.print("network throughput is : ");
         System.out.println(netThroughput);
         
